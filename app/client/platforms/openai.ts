@@ -61,7 +61,7 @@ export interface RequestPayload {
   }[];
   stream?: boolean;
   model: string;
-  temperature: number;
+  temperature?: number;
   presence_penalty?: number;
   frequency_penalty?: number;
   top_p?: number;
@@ -231,14 +231,15 @@ export class ChatGPTApi implements LLMApi {
         messages,
         stream: options.config.stream,
         model: modelConfig.model,
-        temperature: (!isO1OrO3 && !isGpt5) ? modelConfig.temperature : 1,
         // max_tokens: Math.max(modelConfig.max_tokens, 1024),
         // Please do not ask me why not send max_tokens, no reason, this param is just shit, I dont want to explain anymore.
       };
 
-      // NOTE: top_p / presence_penalty / frequency_penalty intentionally NOT sent.
-      // IBM ICA (litellm) azure & bedrock backends reject these params with a
-      // 400 UnsupportedParamsError, so we drop them for all models.
+      // NOTE: temperature / top_p / presence_penalty / frequency_penalty are
+      // intentionally NOT sent. IBM ICA (litellm) azure & bedrock backends
+      // reject or restrict these params (e.g. gpt-5 backend only allows
+      // temperature=1, bedrock rejects them), so we drop them for all models
+      // and let each backend use its own defaults.
 
 
       if (isGpt5) {
